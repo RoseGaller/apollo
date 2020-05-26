@@ -6,6 +6,8 @@ import com.ctrip.framework.apollo.build.ApolloInjector;
 import com.google.common.collect.Maps;
 
 /**
+ *
+ * 维护 namespace -> ConfigFactory
  * @author Jason Song(song_s@ctrip.com)
  */
 public class DefaultConfigFactoryManager implements ConfigFactoryManager {

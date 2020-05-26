@@ -31,6 +31,7 @@ import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
 import com.google.gson.reflect.TypeToken;
 
+//ConfigService定位器
 public class ConfigServiceLocator {
   private static final Logger logger = LoggerFactory.getLogger(ConfigServiceLocator.class);
   private HttpUtil m_httpUtil;
@@ -57,7 +58,7 @@ public class ConfigServiceLocator {
   }
 
   private void initConfigServices() {
-    // get from run time configurations
+    // get from run time configurations 从运行时的本机获取ConfigService
     List<ServiceDTO> customizedConfigServices = getCustomizedConfigService();
 
     if (customizedConfigServices != null) {
@@ -65,8 +66,10 @@ public class ConfigServiceLocator {
       return;
     }
 
+    //从Meta service获取Config Service 信息
     // update from meta service
     this.tryUpdateConfigServices();
+    //周期性调度更新Config Service信息
     this.schedulePeriodicRefresh();
   }
 

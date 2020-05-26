@@ -46,6 +46,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
    */
   public DefaultConfig(String namespace, ConfigRepository configRepository) {
     m_namespace = namespace;
+    //加载META-INF/config/目录下的配置文件
     m_resourceProperties = loadFromResource(m_namespace);
     m_configRepository = configRepository;
     m_configProperties = new AtomicReference<>();
@@ -136,6 +137,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     Properties newConfigProperties = new Properties();
     newConfigProperties.putAll(newProperties);
 
+    //构建propertyName -> ConfigChange
     Map<String, ConfigChange> actualChanges = updateAndCalcConfigChanges(newConfigProperties, sourceType);
 
     //check double checked result
@@ -143,6 +145,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
       return;
     }
 
+    //如果ConfigChangeListener对ConfigChange感兴趣，就会触发用户自定义的ConfigChangeListener的onChange方法
     this.fireConfigChange(new ConfigChangeEvent(m_namespace, actualChanges));
 
     Tracer.logEvent("Apollo.Client.ConfigChanges", m_namespace);
@@ -155,6 +158,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
 
   private Map<String, ConfigChange> updateAndCalcConfigChanges(Properties newConfigProperties,
       ConfigSourceType sourceType) {
+    //计算配置属性的变更类型（新增、修改、删除）
     List<ConfigChange> configChanges =
         calcPropertyChanges(m_namespace, m_configProperties.get(), newConfigProperties);
 
@@ -164,12 +168,12 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     /** === Double check since DefaultConfig has multiple config sources ==== **/
 
     //1. use getProperty to update configChanges's old value
-    for (ConfigChange change : configChanges) {
+    for (ConfigChange change : configChanges) { //设置旧值
       change.setOldValue(this.getProperty(change.getPropertyName(), change.getOldValue()));
     }
 
     //2. update m_configProperties
-    updateConfig(newConfigProperties, sourceType);
+    updateConfig(newConfigProperties, sourceType); //更新本地配置
     clearConfigCache();
 
     //3. use getProperty to update configChange's new value and calc the final changes

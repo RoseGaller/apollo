@@ -17,6 +17,8 @@ import com.google.inject.Guice;
 import com.google.inject.Singleton;
 
 /**
+ *
+ *  基于google guice依赖注入
  * Guice injector
  * @author Jason Song(song_s@ctrip.com)
  */

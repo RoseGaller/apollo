@@ -37,7 +37,7 @@ public class LocalFileConfigRepository extends AbstractConfigRepository
   private File m_baseDir;
   private final ConfigUtil m_configUtil;
   private volatile Properties m_fileProperties;
-  private volatile ConfigRepository m_upstream;
+  private volatile ConfigRepository m_upstream; //远端配置仓库
 
   private volatile ConfigSourceType m_sourceType = ConfigSourceType.LOCAL;
 
@@ -125,7 +125,7 @@ public class LocalFileConfigRepository extends AbstractConfigRepository
 
   @Override
   protected void sync() {
-    //sync with upstream immediately
+    //sync with upstream immediately 从远端同步配置信息
     boolean syncFromUpstreamResultSuccess = trySyncFromUpstream();
 
     if (syncFromUpstreamResultSuccess) {
@@ -136,6 +136,7 @@ public class LocalFileConfigRepository extends AbstractConfigRepository
     Throwable exception = null;
     try {
       transaction.addData("Basedir", m_baseDir.getAbsolutePath());
+      //从本地加载配置信息
       m_fileProperties = this.loadFromLocalCacheFile(m_baseDir, m_namespace);
       m_sourceType = ConfigSourceType.LOCAL;
       transaction.setStatus(Transaction.SUCCESS);
@@ -160,6 +161,7 @@ public class LocalFileConfigRepository extends AbstractConfigRepository
       return false;
     }
     try {
+      //远端配置覆盖本地配置，并持久化到文件中
       updateFileProperties(m_upstream.getConfig(), m_upstream.getSourceType());
       return true;
     } catch (Throwable ex) {

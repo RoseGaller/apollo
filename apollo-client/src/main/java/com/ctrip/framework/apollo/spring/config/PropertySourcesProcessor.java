@@ -32,14 +32,14 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.util.CollectionUtils;
 
 /**
- * Apollo Property Sources processor for Spring Annotation Based Application. <br /> <br />
- *
- * The reason why PropertySourcesProcessor implements {@link BeanFactoryPostProcessor} instead of
- * {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} is that lower versions of
- * Spring (e.g. 3.1.1) doesn't support registering BeanDefinitionRegistryPostProcessor in ImportBeanDefinitionRegistrar
- * - {@link com.ctrip.framework.apollo.spring.annotation.ApolloConfigRegistrar}
- *
- * @author Jason Song(song_s@ctrip.com)
+ *  * Apollo Property Sources processor for Spring Annotation Based Application. <br /> <br />
+ *  *
+ *  * The reason why PropertySourcesProcessor implements {@link BeanFactoryPostProcessor} instead of
+ *  * {@link org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor} is that lower versions of
+ *  * Spring (e.g. 3.1.1) doesn't support registering BeanDefinitionRegistryPostProcessor in ImportBeanDefinitionRegistrar
+ *  * - {@link com.ctrip.framework.apollo.spring.annotation.ApolloConfigRegistrar}
+ *  *
+ *  * @author Jason Song(song_s@ctrip.com)
  */
 public class PropertySourcesProcessor implements BeanFactoryPostProcessor, EnvironmentAware, PriorityOrdered {
   private static final Multimap<Integer, String> NAMESPACE_NAMES = LinkedHashMultimap.create();
@@ -115,6 +115,7 @@ public class PropertySourcesProcessor implements BeanFactoryPostProcessor, Envir
     propertySources.addFirst(bootstrapPropertySource);
   }
 
+  //自动注入
   private void initializeAutoUpdatePropertiesFeature(ConfigurableListableBeanFactory beanFactory) {
     if (!configUtil.isAutoUpdateInjectedSpringPropertiesEnabled() ||
         !AUTO_UPDATE_INITIALIZED_BEAN_FACTORIES.add(beanFactory)) {
@@ -124,6 +125,7 @@ public class PropertySourcesProcessor implements BeanFactoryPostProcessor, Envir
     AutoUpdateConfigChangeListener autoUpdateConfigChangeListener = new AutoUpdateConfigChangeListener(
         environment, beanFactory);
 
+    //所有的Config注册AutoUpdateConfigChangeListener
     List<ConfigPropertySource> configPropertySources = configPropertySourceFactory.getAllConfigPropertySources();
     for (ConfigPropertySource configPropertySource : configPropertySources) {
       configPropertySource.addChangeListener(autoUpdateConfigChangeListener);

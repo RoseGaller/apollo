@@ -7,15 +7,23 @@ import com.ctrip.framework.apollo.internals.ConfigManager;
 import com.ctrip.framework.apollo.spi.ConfigFactory;
 import com.ctrip.framework.apollo.spi.ConfigRegistry;
 
+
+
 /**
+ *
+ * 客户端拉取配置信息入口
+ *
  * Entry point for client config use
  *
  * @author Jason Song(song_s@ctrip.com)
  */
 public class ConfigService {
-  private static final ConfigService s_instance = new ConfigService();
 
+  private static final ConfigService s_instance = new ConfigService(); //单例模式（饿汉）
+
+  //维护Config、ConfigFile（DefaultConfigManager）
   private volatile ConfigManager m_configManager;
+  //维护ConfigFactory（DefaultConfigRegistry）
   private volatile ConfigRegistry m_configRegistry;
 
   private ConfigManager getManager() {

@@ -15,6 +15,8 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ *
+ * 解析ApolloConfig、ApolloConfigChangeListener注解
  * Apollo Annotation Processor for Spring Application
  *
  * @author Jason Song(song_s@ctrip.com)

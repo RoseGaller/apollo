@@ -20,6 +20,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.CollectionUtils;
 
 /**
+ * 配置发生变化时，自动更新Bean中被Apollo注解（Value/ApolloJsonValue）标注的方法、属性
  * Create by zhangzheng on 2018/3/6
  */
 public class AutoUpdateConfigChangeListener implements ConfigChangeListener{

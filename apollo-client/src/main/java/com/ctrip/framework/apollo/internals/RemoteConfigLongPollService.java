@@ -90,6 +90,7 @@ public class RemoteConfigLongPollService {
     m_longPollRateLimiter = RateLimiter.create(m_configUtil.getLongPollQPS());
   }
 
+  //提交namespace-》RemoteConfigRepository
   public boolean submit(String namespace, RemoteConfigRepository remoteConfigRepository) {
     boolean added = m_longPollNamespaces.put(namespace, remoteConfigRepository);
     m_notifications.putIfAbsent(namespace, INIT_NOTIFICATION_ID);
@@ -99,6 +100,7 @@ public class RemoteConfigLongPollService {
     return added;
   }
 
+  //开始调度long polling
   private void startLongPolling() {
     if (!m_longPollStarted.compareAndSet(false, true)) {
       //already started
@@ -137,6 +139,7 @@ public class RemoteConfigLongPollService {
     this.m_longPollingStopped.compareAndSet(false, true);
   }
 
+  //执行long polling
   private void doLongPollingRefresh(String appId, String cluster, String dataCenter, String secret) {
     final Random random = new Random();
     ServiceDTO lastServiceDto = null;
@@ -163,7 +166,7 @@ public class RemoteConfigLongPollService {
         logger.debug("Long polling from {}", url);
 
         HttpRequest request = new HttpRequest(url);
-        request.setReadTimeout(LONG_POLLING_READ_TIMEOUT);
+        request.setReadTimeout(LONG_POLLING_READ_TIMEOUT); //默认90秒
         if (!StringUtils.isBlank(secret)) {
           Map<String, String> headers = Signature.buildHttpHeaders(url, appId, secret);
           request.setHeaders(headers);

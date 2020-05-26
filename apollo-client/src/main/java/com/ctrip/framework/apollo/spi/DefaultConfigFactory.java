@@ -23,6 +23,8 @@ import com.ctrip.framework.apollo.internals.YmlConfigFile;
 import com.ctrip.framework.apollo.util.ConfigUtil;
 
 /**
+ * 默认ConfigFactory，根据namespace创建Config、ConfigFile
+ *
  * @author Jason Song(song_s@ctrip.com)
  */
 public class DefaultConfigFactory implements ConfigFactory {
@@ -63,16 +65,20 @@ public class DefaultConfigFactory implements ConfigFactory {
     return null;
   }
 
+  //根据namespace创建本地仓库
   LocalFileConfigRepository createLocalConfigRepository(String namespace) {
-    if (m_configUtil.isInLocalMode()) {
+    if (m_configUtil.isInLocalMode()) { //判断是否是本地模式
       logger.warn(
           "==== Apollo is in local mode! Won't pull configs from remote server for namespace {} ! ====",
           namespace);
       return new LocalFileConfigRepository(namespace);
     }
+    //远程模式。需要从远端拉取配置
     return new LocalFileConfigRepository(namespace, createRemoteConfigRepository(namespace));
   }
 
+
+  // 根据namespace创建远程仓库
   RemoteConfigRepository createRemoteConfigRepository(String namespace) {
     return new RemoteConfigRepository(namespace);
   }

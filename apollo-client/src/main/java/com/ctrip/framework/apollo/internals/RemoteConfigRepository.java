@@ -42,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 远端配置仓库
+ *
  * @author Jason Song(song_s@ctrip.com)
  */
 public class RemoteConfigRepository extends AbstractConfigRepository {
@@ -80,17 +82,24 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
     m_configCache = new AtomicReference<>();
     m_configUtil = ApolloInjector.getInstance(ConfigUtil.class);
     m_httpUtil = ApolloInjector.getInstance(HttpUtil.class);
+    //获取ConfigService
     m_serviceLocator = ApolloInjector.getInstance(ConfigServiceLocator.class);
+    //Http long polling service
     remoteConfigLongPollService = ApolloInjector.getInstance(RemoteConfigLongPollService.class);
     m_longPollServiceDto = new AtomicReference<>();
     m_remoteMessages = new AtomicReference<>();
+    //限制配置信息的远程拉取
     m_loadConfigRateLimiter = RateLimiter.create(m_configUtil.getLoadConfigQPS());
     m_configNeedForceRefresh = new AtomicBoolean(true);
+    //拉取失败的调度策略
     m_loadConfigFailSchedulePolicy = new ExponentialSchedulePolicy(m_configUtil.getOnErrorRetryInterval(),
         m_configUtil.getOnErrorRetryInterval() * 8);
     gson = new Gson();
+    //从远程同步，从config service拉取需要的配信息
     this.trySync();
+    //周期调度执行从config service拉取需要的配信息
     this.schedulePeriodicRefresh();
+    //定时调度http long polling
     this.scheduleLongPollingRefresh();
   }
 
@@ -128,18 +137,22 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
         m_configUtil.getRefreshIntervalTimeUnit());
   }
 
+
+  //同步配置信息
   @Override
   protected synchronized void sync() {
     Transaction transaction = Tracer.newTransaction("Apollo.ConfigService", "syncRemoteConfig");
 
     try {
+      //本地缓存获取配置
       ApolloConfig previous = m_configCache.get();
       ApolloConfig current = loadApolloConfig();
 
       //reference equals means HTTP 304
-      if (previous != current) {
+      if (previous != current) { // 配置发生变化，更新本地缓存
         logger.debug("Remote Config refreshed!");
         m_configCache.set(current);
+        // 执行注册的Listener
         this.fireRepositoryChange(m_namespace, this.getConfig());
       }
 
@@ -163,7 +176,9 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
     return result;
   }
 
+  //通过发送Http请求ConfigService拉取配置信息
   private ApolloConfig loadApolloConfig() {
+    //默认每秒2次
     if (!m_loadConfigRateLimiter.tryAcquire(5, TimeUnit.SECONDS)) {
       //wait at most 5 seconds
       try {
@@ -171,6 +186,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
       } catch (InterruptedException e) {
       }
     }
+
     String appId = m_configUtil.getAppId();
     String cluster = m_configUtil.getCluster();
     String dataCenter = m_configUtil.getDataCenter();
@@ -202,14 +218,14 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
             //ignore
           }
         }
-
+        //构建请求地址
         url = assembleQueryConfigUrl(configService.getHomepageUrl(), appId, cluster, m_namespace,
                 dataCenter, m_remoteMessages.get(), m_configCache.get());
 
         logger.debug("Loading config from {}", url);
 
         HttpRequest request = new HttpRequest(url);
-        if (!StringUtils.isBlank(secret)) {
+        if (!StringUtils.isBlank(secret)) { //添加头部签名
           Map<String, String> headers = Signature.buildHttpHeaders(url, appId, secret);
           request.setHeaders(headers);
         }
@@ -218,6 +234,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
         transaction.addData("Url", url);
         try {
 
+          //发送请求
           HttpResponse<ApolloConfig> response = m_httpUtil.doGet(request, ApolloConfig.class);
           m_configNeedForceRefresh.set(false);
           m_loadConfigFailSchedulePolicy.success();
@@ -306,6 +323,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
     return uri + pathExpanded;
   }
 
+  //定时执行long polling
   private void scheduleLongPollingRefresh() {
     remoteConfigLongPollService.submit(m_namespace, this);
   }
@@ -322,6 +340,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
     });
   }
 
+  //从配置信息或者meta service中获取Config Service信息，手动配置config service地址或者config service注册到注册中心，通过meta service获取
   private List<ServiceDTO> getConfigServices() {
     List<ServiceDTO> services = m_serviceLocator.getConfigServices();
     if (services.size() == 0) {

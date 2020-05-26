@@ -83,6 +83,7 @@ public class ConfigServiceAutoConfiguration {
       this.configService = configService;
     }
 
+    //配置ReleaseMessageScanner，注入NotificationControllerV2监听消息的变化
     @Bean
     public ReleaseMessageScanner releaseMessageScanner() {
       ReleaseMessageScanner releaseMessageScanner = new ReleaseMessageScanner();

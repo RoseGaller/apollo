@@ -437,7 +437,7 @@ public abstract class AbstractConfig implements Config {
   protected void fireConfigChange(final ConfigChangeEvent changeEvent) {
     for (final ConfigChangeListener listener : m_listeners) {
       // check whether the listener is interested in this change event
-      if (!isConfigChangeListenerInterested(listener, changeEvent)) {
+      if (!isConfigChangeListenerInterested(listener, changeEvent)) { //listener是否对change event感兴趣
         continue;
       }
       m_executorService.submit(new Runnable() {
@@ -445,7 +445,7 @@ public abstract class AbstractConfig implements Config {
         public void run() {
           String listenerName = listener.getClass().getName();
           Transaction transaction = Tracer.newTransaction("Apollo.ConfigChangeListener", listenerName);
-          try {
+          try { //AutoUpdateConfigChangeListener
             listener.onChange(changeEvent);
             transaction.setStatus(Transaction.SUCCESS);
           } catch (Throwable ex) {

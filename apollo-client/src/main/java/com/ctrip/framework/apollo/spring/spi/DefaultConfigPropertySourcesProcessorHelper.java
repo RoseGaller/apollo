@@ -12,8 +12,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
+//向BeanDefinitionRegistry注册ApolloProcessor，解析apollo注解
 public class DefaultConfigPropertySourcesProcessorHelper implements ConfigPropertySourcesProcessorHelper {
 
+  //向BeanDefinitionRegistry注册PropertySourcesPlaceholderConfigurer、ApolloAnnotationProcessor、SpringValueProcessor、ApolloJsonValueProcessor
   @Override
   public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
     Map<String, Object> propertySourcesPlaceholderPropertyValues = new HashMap<>();

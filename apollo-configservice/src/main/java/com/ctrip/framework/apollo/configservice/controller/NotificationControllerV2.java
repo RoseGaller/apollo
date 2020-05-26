@@ -49,6 +49,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
+ *
+ * 1、处理client的Long polling请求
+ * 2、实现了ReleaseMessageListener，监听消息变化
  * @author Jason Song(song_s@ctrip.com)
  */
 @RestController
@@ -253,6 +256,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
       return;
     }
 
+    //获取所属的namespace
     String changedNamespace = retrieveNamespaceFromReleaseMessage.apply(content);
 
     if (Strings.isNullOrEmpty(changedNamespace)) {
@@ -260,6 +264,7 @@ public class NotificationControllerV2 implements ReleaseMessageListener {
       return;
     }
 
+    //待处理请求中是否包含此namespace
     if (!deferredResults.containsKey(content)) {
       return;
     }

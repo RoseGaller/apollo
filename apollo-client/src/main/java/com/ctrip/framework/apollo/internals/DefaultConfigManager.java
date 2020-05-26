@@ -11,6 +11,7 @@ import com.ctrip.framework.apollo.spi.ConfigFactoryManager;
 import com.google.common.collect.Maps;
 
 /**
+ * 默认ConfigManager，维护namespace -》 Config / namespace-》ConfigFile
  * @author Jason Song(song_s@ctrip.com)
  */
 public class DefaultConfigManager implements ConfigManager {
